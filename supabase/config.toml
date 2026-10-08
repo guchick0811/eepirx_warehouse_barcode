@@ -1,0 +1,6 @@
+# Supabase CLI 設定：只用到 Edge Function 部署
+project_id = "bniocopeeizpsxpyuwnb"
+
+[functions.admin-users]
+# 閘道先驗 JWT 格式；函式內再用 auth.getUser() 做真正的驗證
+verify_jwt = true

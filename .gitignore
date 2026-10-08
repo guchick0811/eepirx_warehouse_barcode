@@ -1,0 +1,17 @@
+# 機密與原始資料，絕不進版本控制
+.env
+.env.*
+參考資料/
+連線資訊*.txt
+
+# 建置產物與依賴
+node_modules/
+dist/
+dev-dist/
+.venv/
+__pycache__/
+*.log
+.DS_Store
+
+# 範本檔要進版控
+!.env.example
