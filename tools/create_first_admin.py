@@ -5,7 +5,7 @@
   SUPABASE_DB_URL / SUPABASE_DB_PASSWORD（與 apply_sql.py 相同，找不到時改讀 Supabase資料庫建置/.env）
 
 用法：
-  "C:/Users/user/Desktop/Supabase資料庫建置/.venv/Scripts/python" tools/create_first_admin.py --username admin
+  .venv/Scripts/python tools/create_first_admin.py --username admin
 密碼在執行時輸入，不會寫進任何檔案。
 """
 import argparse

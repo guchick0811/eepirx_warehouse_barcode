@@ -62,6 +62,7 @@ export async function login(username: string, password: string): Promise<AppUser
   const { data, error } = await supabase.auth.signInWithPassword({ email: usernameToEmail(u), password });
   if (error || !data.user) {
     if (error && isAuthRetryableFetchError(error)) throw new LoginError("無法連線到伺服器，請確認網路");
+    if (error && /banned/i.test(error.message)) throw new LoginError("此帳號已停用，請洽管理者");
     throw new LoginError("帳號或密碼錯誤");
   }
   let profile: AppUser | null = null;

@@ -32,8 +32,8 @@ Supabase 專案 bniocopeeizpsxpyuwnb
 
 ## 第一次建置（管理者在電腦上做一次）
 
-Python 指令都用 `Supabase資料庫建置` 專案的 venv（已裝 psycopg）：
-`PY="C:/Users/user/Desktop/Supabase資料庫建置/.venv/Scripts/python"`
+Python 指令用本專案的 venv（`python -m venv .venv` 後 `.venv/Scripts/pip install "psycopg[binary]"`）：
+`PY=.venv/Scripts/python`
 
 1. **Supabase Dashboard 設定**（Authentication → Settings / Providers）
    - Email provider 保持開啟；關閉「Allow new users to sign up」、關閉「Allow anonymous sign-ins」
@@ -51,7 +51,7 @@ Python 指令都用 `Supabase資料庫建置` 專案的 venv（已裝 psycopg）
    npx supabase functions deploy admin-users --project-ref bniocopeeizpsxpyuwnb
    npx supabase secrets set ALLOWED_ORIGINS="https://guchick0811.github.io,http://localhost:5173" --project-ref bniocopeeizpsxpyuwnb
    ```
-6. **整合測試**：`cd app && node ../tools/test_access.mjs`（會建立並刪除測試帳號 `test_zz01`）
+6. **整合測試**：`node tools/test_access.mjs`（會建立並刪除測試帳號 `test_zz01`）
 7. **部署 APP**：建立 GitHub repo（名稱不易猜測）→ Settings → Pages → Source 選「GitHub Actions」→ Settings → Secrets and variables → Actions → Variables 新增 `SUPABASE_ANON_KEY` → push 到 main。
    網址：`https://guchick0811.github.io/eepirx_warehouse_barcode/`
 8. **Supabase Auth URL**：Authentication → URL Configuration → Site URL 填上述網址。

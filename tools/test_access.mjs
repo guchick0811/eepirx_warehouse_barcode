@@ -1,11 +1,14 @@
 // 權限整合測試：用真實的 Supabase 專案驗證帳號系統與資料存取規則。
-// 用法（在 app/ 目錄下，需先建立管理者帳號並部署 Edge Function）：
-//   set ADMIN_USER=admin
-//   set ADMIN_PASSWORD=xxxx      （或執行時互動輸入）
-//   node ../tools/test_access.mjs
-// 需要 app/.env 內的 VITE_SUPABASE_ANON_KEY。
-import { createClient } from "@supabase/supabase-js";
+// 用法（在專案根目錄，需先 cd app && npm install 並部署 Edge Function）：
+//   node tools/test_access.mjs
+// 需要 app/.env 的 VITE_SUPABASE_ANON_KEY。預設會用根目錄 .env 的 SUPABASE_SERVICE_ROLE_KEY
+// 建立一個暫時的管理者 test_zz_admin 來執行測試，結束後刪除；
+// 也可改用既有管理者：set ADMIN_USER=admin / set ADMIN_PASSWORD=xxxx。
 import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
+
+// 套件裝在 app/node_modules，從那裡解析
+const { createClient } = createRequire(new URL("../app/package.json", import.meta.url))("@supabase/supabase-js");
 import { createInterface } from "node:readline/promises";
 
 const SUPABASE_URL = "https://bniocopeeizpsxpyuwnb.supabase.co";
@@ -24,7 +27,38 @@ function loadAnonKey() {
   throw new Error("找不到 VITE_SUPABASE_ANON_KEY");
 }
 
+function loadServiceKey() {
+  if (process.env.SUPABASE_SERVICE_ROLE_KEY) return process.env.SUPABASE_SERVICE_ROLE_KEY;
+  for (const p of ["./.env", "../.env"]) {
+    try {
+      const m = readFileSync(p, "utf8").match(/^SUPABASE_SERVICE_ROLE_KEY=(.+)$/m);
+      if (m && m[1].trim()) return m[1].trim();
+    } catch { /* 下一個 */ }
+  }
+  return "";
+}
+
 const ANON_KEY = loadAnonKey();
+const TEMP_ADMIN = "test_zz_admin";
+
+/** 用 service role 建立暫時管理者（測試完刪除） */
+async function bootstrapTempAdmin(serviceKey) {
+  const svc = createClient(SUPABASE_URL, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  // 清掉上次殘留（包含只建了 Auth 帳號、沒寫進 app_users 的情況）
+  const { data: listed } = await svc.auth.admin.listUsers({ perPage: 1000 });
+  for (const u of listed?.users ?? []) {
+    if (u.email === `${TEMP_ADMIN}@${EMAIL_DOMAIN}`) await svc.auth.admin.deleteUser(u.id);
+  }
+  const password = "Adm-" + Math.random().toString(36).slice(2, 12) + "x";
+  const { data, error } = await svc.auth.admin.createUser({ email: `${TEMP_ADMIN}@${EMAIL_DOMAIN}`, password, email_confirm: true });
+  if (error) throw new Error("建立暫時管理者失敗：" + error.message);
+  const { error: insErr } = await svc.from("app_users").insert({ id: data.user.id, username: TEMP_ADMIN, display_name: "測試管理者", role: "admin", is_active: true });
+  if (insErr) {
+    await svc.auth.admin.deleteUser(data.user.id);
+    throw new Error("寫入 app_users 失敗：" + insErr.message);
+  }
+  return { username: TEMP_ADMIN, password, remove: () => svc.auth.admin.deleteUser(data.user.id) };
+}
 const client = () => createClient(SUPABASE_URL, ANON_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
 
 let failures = 0;
@@ -52,10 +86,23 @@ async function login(username, password) {
 }
 
 async function main() {
-  const rl = createInterface({ input: process.stdin, output: process.stdout });
-  const adminUser = process.env.ADMIN_USER || (await rl.question("管理者帳號：")).trim();
-  const adminPw = process.env.ADMIN_PASSWORD || (await rl.question("管理者密碼："));
-  rl.close();
+  let adminUser = process.env.ADMIN_USER;
+  let adminPw = process.env.ADMIN_PASSWORD;
+  let temp = null;
+  if (!adminPw) {
+    const serviceKey = loadServiceKey();
+    if (serviceKey) {
+      temp = await bootstrapTempAdmin(serviceKey);
+      adminUser = temp.username;
+      adminPw = temp.password;
+      console.log(`0. 已用 service role 建立暫時管理者 ${TEMP_ADMIN}（測試後刪除）`);
+    } else {
+      const rl = createInterface({ input: process.stdin, output: process.stdout });
+      adminUser = adminUser || (await rl.question("管理者帳號：")).trim();
+      adminPw = await rl.question("管理者密碼：");
+      rl.close();
+    }
+  }
 
   console.log("1. 未登入（只有 anon key）");
   const anon = client();
@@ -137,6 +184,10 @@ async function main() {
   const mine = (auditRes.data ?? []).filter((r) => r.target_username === TEST_USER).map((r) => r.action);
   check("稽核含 create/set_active/reset_password/delete", ["create", "set_active", "reset_password", "delete"].every((a) => mine.includes(a)), mine.join(","));
 
+  if (temp) {
+    await temp.remove();
+    check("暫時管理者已刪除", !(await login(temp.username, temp.password)).session);
+  }
   console.log(failures ? `\n${failures} 項失敗` : "\n全部通過");
   process.exit(failures ? 1 : 0);
 }

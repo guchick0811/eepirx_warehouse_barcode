@@ -1,8 +1,8 @@
 """套用 supabase/migrations/*.sql 到 Supabase，並檢查權限設定。
 
 用法（psycopg 在「Supabase資料庫建置」的 venv 裡）：
-  "C:/Users/user/Desktop/Supabase資料庫建置/.venv/Scripts/python" tools/apply_sql.py           # 套用全部
-  "C:/Users/user/Desktop/Supabase資料庫建置/.venv/Scripts/python" tools/apply_sql.py --verify  # 只檢查
+  .venv/Scripts/python tools/apply_sql.py           # 套用全部
+  .venv/Scripts/python tools/apply_sql.py --verify  # 只檢查
 
 連線設定：本資料夾的 .env（SUPABASE_DB_URL、SUPABASE_DB_PASSWORD）；沒有就讀 Supabase資料庫建置/.env。
 """
@@ -29,10 +29,11 @@ def load_env() -> None:
             if not line or line.startswith("#") or "=" not in line:
                 continue
             k, v = line.split("=", 1)
-            os.environ.setdefault(k.strip(), v.strip())
-        if os.environ.get("SUPABASE_DB_URL"):
-            return
-    sys.exit("找不到 SUPABASE_DB_URL，請建立 .env")
+            if v.strip():
+                os.environ.setdefault(k.strip(), v.strip())
+    # 兩個 .env 都讀：本專案留空的值（例如資料庫密碼）會由 Supabase資料庫建置/.env 補上
+    if not os.environ.get("SUPABASE_DB_URL"):
+        sys.exit("找不到 SUPABASE_DB_URL，請建立 .env")
 
 
 def db_url() -> str:
@@ -78,6 +79,8 @@ def verify(pg: psycopg.Connection) -> None:
             ("anon 不能讀 app_users", "select has_table_privilege('anon', 'public.app_users', 'SELECT')", False),
             ("authenticated 不能寫 app_users", "select has_table_privilege('authenticated', 'public.app_users', 'INSERT, UPDATE, DELETE')", False),
             ("authenticated 不能讀稽核表", "select has_table_privilege('authenticated', 'public.app_user_audit', 'SELECT')", False),
+            ("service_role 可寫 app_users", "select has_table_privilege('service_role', 'public.app_users', 'INSERT, UPDATE, DELETE')", True),
+            ("service_role 可寫稽核表", "select has_table_privilege('service_role', 'public.app_user_audit', 'INSERT')", True),
             ("app_users 已開 RLS", "select relrowsecurity from pg_class where oid = 'public.app_users'::regclass", True),
             ("anon 無 erp schema 權限", "select has_schema_privilege('anon', 'erp', 'USAGE')", False),
             ("authenticated 無 erp schema 權限", "select has_schema_privilege('authenticated', 'erp', 'USAGE')", False),

@@ -52,3 +52,7 @@ comment on table public.app_user_audit is '人員管理操作紀錄（誰、做�
 revoke all on table public.app_user_audit from public, anon, authenticated;
 revoke all on sequence public.app_user_audit_id_seq from public, anon, authenticated;
 alter table public.app_user_audit enable row level security;
+
+-- service role（Edge Function 用）必須明確授權：postgres 建立的物件不會自動給 service_role
+grant all on table public.app_users, public.app_user_audit to service_role;
+grant usage, select on sequence public.app_user_audit_id_seq to service_role;
