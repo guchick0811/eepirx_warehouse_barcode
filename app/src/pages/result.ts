@@ -68,7 +68,9 @@ export function renderResult(root: HTMLElement): void {
     body.replaceChildren(title, el("ul", { class: "list" }, ...result.items.map((p) => listItem(p, showCard))));
   };
 
-  root.append(el("h1", {}, "查詢結果"), el("p", { class: "muted" }, `查詢：${state.lastQuery}`), body, back);
+  // 「繼續掃描」固定在畫面底部（導覽列上方），不必捲動就能按
+  root.classList.add("has-action");
+  root.append(el("h1", {}, "查詢結果"), el("p", { class: "muted" }, `查詢：${state.lastQuery}`), body, el("div", { class: "action-bar" }, back));
 
   if (result.kind === "none") {
     body.append(el("div", { class: "card center" }, el("p", {}, "找不到這個條碼或商品"), el("p", { class: "muted" }, "可改用商品編號或名稱關鍵字查詢；若為新商品，請先同步資料。")));
