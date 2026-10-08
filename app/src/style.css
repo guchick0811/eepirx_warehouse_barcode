@@ -130,7 +130,17 @@ th { color: var(--muted); font-weight: 500; font-size: 13px; }
 .kv { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--bg-3); }
 .kv span:first-child { color: var(--muted); }
 .kv span:last-child { text-align: right; word-break: break-all; }
-.tag { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--bg-3); }
+.tag { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--bg-3); white-space: nowrap; }
+
+/* 人員卡片 */
+.user-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+.user-card { background: var(--bg-2); border-radius: var(--radius); padding: 14px 16px; }
+.user-card.inactive { opacity: 0.75; }
+.user-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.user-name { font-size: 18px; font-weight: 700; word-break: break-all; }
+.user-tags { display: flex; gap: 6px; flex-shrink: 0; }
+.user-actions { display: flex; gap: 8px; margin-top: 12px; }
+.user-actions button { flex: 1; min-height: 44px; padding: 8px 4px; white-space: nowrap; }
 .tag.on { background: var(--ok); color: #052e16; }
 .tag.off { background: var(--danger); color: #1a0000; }
 .tag.admin { background: var(--accent); color: #082f49; }

@@ -16,7 +16,7 @@ const ACTION_LABEL: Record<string, string> = {
 };
 
 export function renderUsers(root: HTMLElement): void {
-  const tableBody = el("tbody");
+  const tableBody = el("div", { class: "user-list" });
   const auditBody = el("tbody");
 
   async function load(): Promise<void> {
@@ -64,12 +64,20 @@ export function renderUsers(root: HTMLElement): void {
     });
 
     return el(
-      "tr",
-      {},
-      el("td", {}, el("div", {}, u.username), el("div", { class: "muted" }, u.display_name || "")),
-      el("td", {}, el("span", { class: "tag " + (u.role === "admin" ? "admin" : "") }, u.role === "admin" ? "管理者" : "一般")),
-      el("td", {}, el("span", { class: "tag " + (u.is_active ? "on" : "off") }, u.is_active ? "啟用" : "停用")),
-      el("td", {}, el("div", { class: "stack" }, toggle, reset, remove)),
+      "div",
+      { class: "user-card" + (u.is_active ? "" : " inactive") },
+      el(
+        "div",
+        { class: "user-head" },
+        el("div", {}, el("div", { class: "user-name" }, u.username), el("div", { class: "muted" }, u.display_name || "")),
+        el(
+          "div",
+          { class: "user-tags" },
+          el("span", { class: "tag " + (u.role === "admin" ? "admin" : "") }, u.role === "admin" ? "管理者" : "一般"),
+          el("span", { class: "tag " + (u.is_active ? "on" : "off") }, u.is_active ? "啟用" : "停用"),
+        ),
+      ),
+      el("div", { class: "user-actions" }, toggle, reset, remove),
     );
   }
 
@@ -106,8 +114,7 @@ export function renderUsers(root: HTMLElement): void {
 
   root.append(
     el("h1", {}, "人員管理"),
-    el("div", { class: "card" }, el("table", {}, el("thead", {}, el("tr", {}, el("th", {}, "帳號"), el("th", {}, "角色"), el("th", {}, "狀態"), el("th", {}, "操作"))), tableBody)),
-    el("div", { style: "height:12px" }),
+    tableBody,
     form,
     el("h2", {}, "最近操作紀錄"),
     el("div", { class: "card" }, el("table", {}, el("thead", {}, el("tr", {}, el("th", {}, "時間"), el("th", {}, "操作者"), el("th", {}, "動作"), el("th", {}, "對象"))), auditBody)),
