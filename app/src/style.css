@@ -28,14 +28,17 @@ body {
 #app { min-height: 100%; display: flex; flex-direction: column; }
 main.page { flex: 1; padding: calc(16px + var(--safe-t)) 16px calc(var(--nav-h) + 16px + var(--safe-b)); }
 main.page.no-nav { padding-bottom: calc(16px + var(--safe-b)); }
-main.page.has-action { padding-bottom: calc(var(--nav-h) + 92px + var(--safe-b)); }
 
-/* 固定在導覽列上方的主要操作按鈕 */
-.action-bar {
-  position: fixed; left: 0; right: 0; bottom: calc(var(--nav-h) + var(--safe-b));
-  padding: 10px 16px 12px; z-index: 9;
-  background: linear-gradient(to bottom, rgba(15, 23, 42, 0), var(--bg) 35%);
+/* 右側懸浮圓鈕：固定在螢幕右緣、約 2/3 高度處（單手握持時大拇指自然落點） */
+.fab {
+  position: fixed; right: 14px; bottom: calc(var(--nav-h) + var(--safe-b) + 26vh);
+  width: 76px; height: 76px; min-height: 0; padding: 0; border-radius: 50%; z-index: 9;
+  flex-direction: column; gap: 0; line-height: 1.1;
+  background: var(--accent-2); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45), 0 0 0 3px rgba(15, 23, 42, 0.6);
 }
+.fab:active { transform: scale(0.94); }
+.fab-ico { font-size: 28px; }
+.fab-label { font-size: 13px; font-weight: 700; }
 
 h1 { font-size: 22px; margin: 0 0 12px; }
 h2 { font-size: 18px; margin: 20px 0 8px; color: var(--fg-2); }

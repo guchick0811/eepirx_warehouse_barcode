@@ -48,7 +48,8 @@ export function renderResult(root: HTMLElement): void {
     navigate("#/scan");
     return;
   }
-  const back = el("button", { type: "button", onclick: () => navigate("#/scan") }, "📷 繼續掃描");
+  // 「繼續掃描」為右側懸浮圓鈕，位置在大拇指握持處，不必捲動或換手
+  const back = el("button", { type: "button", class: "fab", "aria-label": "繼續掃描", onclick: () => navigate("#/scan") }, el("span", { class: "fab-ico" }, "📷"), el("span", { class: "fab-label" }, "掃描"));
   const body = el("div", { class: "stack" });
 
   const showCard = (p: Product) => {
@@ -68,9 +69,7 @@ export function renderResult(root: HTMLElement): void {
     body.replaceChildren(title, el("ul", { class: "list" }, ...result.items.map((p) => listItem(p, showCard))));
   };
 
-  // 「繼續掃描」固定在畫面底部（導覽列上方），不必捲動就能按
-  root.classList.add("has-action");
-  root.append(el("h1", {}, "查詢結果"), el("p", { class: "muted" }, `查詢：${state.lastQuery}`), body, el("div", { class: "action-bar" }, back));
+  root.append(el("h1", {}, "查詢結果"), el("p", { class: "muted" }, `查詢：${state.lastQuery}`), body, back);
 
   if (result.kind === "none") {
     body.append(el("div", { class: "card center" }, el("p", {}, "找不到這個條碼或商品"), el("p", { class: "muted" }, "可改用商品編號或名稱關鍵字查詢；若為新商品，請先同步資料。")));
