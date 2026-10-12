@@ -35,7 +35,7 @@ export function renderScan(root: HTMLElement): () => void {
   // 拇指區的鍵盤圓鈕（面板打開時改用面板上的放大鏡）
   const searchFab = el("button", { type: "button", class: "fab", "aria-label": "手動查詢", "aria-expanded": "false" }, icon("keyboard", 30), el("span", { class: "fab-label" }, "輸入"));
   searchFab.addEventListener("click", () => setSearch(!!form.hidden));
-  const sheetSearch = el("button", { type: "button", class: "sheet-close", "aria-label": "手動查詢" }, icon("search", 22));
+  const sheetSearch = el("button", { type: "button", class: "sheet-btn", "aria-label": "手動查詢" }, icon("search", 22));
   sheetSearch.addEventListener("click", () => setSearch(!!form.hidden));
 
   const video = el("video", { autoplay: true, muted: true, playsinline: true }) as HTMLVideoElement;
