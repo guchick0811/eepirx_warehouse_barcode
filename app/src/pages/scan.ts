@@ -9,10 +9,10 @@ import { renderResultContent } from "./result";
 const RESUME_DELAY = 700; // 面板滑出後多久恢復辨識
 
 export function renderScan(root: HTMLElement): () => void {
-  // 手動查詢固定在最上方，面板打開時也按得到
+  // 手動查詢固定在底部導覽列上方（大拇指區），結果面板會停在它上面，隨時按得到
   const input = el("input", { id: "scan-query", type: "search", inputmode: "search", autocapitalize: "characters", autocomplete: "off", placeholder: "條碼／商品編號／名稱關鍵字", "aria-label": "手動查詢" }) as HTMLInputElement;
   const searchBtn = el("button", { type: "submit", class: "small" }, "查詢");
-  const form = el("form", { class: "row search-top" }, input, searchBtn);
+  const form = el("form", { class: "search-bar" }, input, searchBtn);
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const v = input.value.trim();
@@ -61,7 +61,8 @@ export function renderScan(root: HTMLElement): () => void {
   };
   window.addEventListener("scan:result", showResult);
 
-  root.append(el("h1", { class: "visually-hidden" }, "掃描條碼"), form, wrap, msg, retryBtn, count, sheet.root);
+  root.classList.add("has-search");
+  root.append(el("h1", { class: "visually-hidden" }, "掃描條碼"), wrap, msg, retryBtn, count, form, sheet.root);
 
   const scanner = new Scanner(video);
   let stopped = false;
@@ -87,9 +88,9 @@ export function renderScan(root: HTMLElement): () => void {
       wrap.hidden = true;
       // 相機不可用時提示條改放在頁面上，否則會跟著相機一起被隱藏
       bannerSlot.classList.remove("scan-banner");
-      root.insertBefore(bannerSlot, form);
+      root.insertBefore(bannerSlot, wrap);
       msg.hidden = false;
-      msg.textContent = e instanceof ScannerError ? e.message : "相機無法使用，請改用上方手動查詢";
+      msg.textContent = e instanceof ScannerError ? e.message : "相機無法使用，請改用下方手動查詢";
       retryBtn.hidden = false;
     }
   }
