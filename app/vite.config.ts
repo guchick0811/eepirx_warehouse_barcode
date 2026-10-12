@@ -34,6 +34,8 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,wasm,png,svg,woff2}"],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         navigateFallback: `${base}index.html`,
+        // 根目錄的 SW 不接管 /preview/（分支預覽版有自己的 SW）
+        navigateFallbackDenylist: [/\/preview\//],
         cleanupOutdatedCaches: true,
       },
     }),

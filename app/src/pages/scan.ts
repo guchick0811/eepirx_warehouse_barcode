@@ -43,6 +43,7 @@ export function renderScan(root: HTMLElement): () => void {
     label: "查詢結果",
     onClose: () => {
       state.sheetOpen = false;
+      root.classList.remove("sheet-open");
       status.textContent = "將條碼對準框內";
       scanner.resume();
     },
@@ -52,6 +53,7 @@ export function renderScan(root: HTMLElement): () => void {
     const title = renderResultContent(sheet.body, state.lastResult, state.lastQuery);
     sheet.setTitle(title);
     state.sheetOpen = true;
+    root.classList.add("sheet-open");
     sheet.open();
     window.setTimeout(() => {
       if (!stopped) scanner.resume();
