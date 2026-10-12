@@ -4,11 +4,11 @@ import { checkForUpdates, loadLocalData, syncNow } from "./app";
 import { renderHelp } from "./pages/help";
 import { renderLogin } from "./pages/login";
 import { renderManage } from "./pages/manage";
-import { renderResult } from "./pages/result";
 import { renderScan } from "./pages/scan";
 import { renderUsers } from "./pages/users";
 import { state } from "./state";
 import { resolveSession } from "./supabase";
+import { icon } from "./icons";
 import { clear, el, toast } from "./ui";
 
 type Cleanup = (() => void) | void;
@@ -17,7 +17,6 @@ type Page = { render: (root: HTMLElement) => Cleanup | Promise<Cleanup>; auth: b
 const routes: Record<string, Page> = {
   "#/login": { render: renderLogin, auth: false, nav: false },
   "#/scan": { render: renderScan, auth: true, nav: true },
-  "#/result": { render: renderResult, auth: true, nav: true },
   "#/manage": { render: renderManage, auth: true, nav: true },
   "#/users": { render: renderUsers, auth: true, admin: true, nav: true },
   "#/help": { render: renderHelp, auth: true, nav: true },
@@ -27,18 +26,17 @@ const root = document.getElementById("app")!;
 let cleanup: Cleanup = undefined;
 
 function navBar(current: string): HTMLElement {
-  const tabs: Array<[string, string, string]> = [
-    ["#/scan", "📷", "掃描"],
-    ["#/manage", "🗂️", "資料"],
+  const tabs: Array<[string, "camera" | "database" | "users" | "help", string]> = [
+    ["#/scan", "camera", "掃描"],
+    ["#/manage", "database", "資料"],
   ];
-  if (state.user?.role === "admin") tabs.push(["#/users", "👥", "人員"]);
-  tabs.push(["#/help", "❓", "說明"]);
-  const active = current === "#/result" ? "#/scan" : current;
+  if (state.user?.role === "admin") tabs.push(["#/users", "users", "人員"]);
+  tabs.push(["#/help", "help", "說明"]);
   return el(
     "nav",
-    { class: "tabs" },
+    { class: "tabs", "aria-label": "主選單" },
     ...tabs.map(([href, ico, label]) =>
-      el("a", { href, class: href === active ? "active" : "" }, el("span", { class: "ico" }, ico), el("span", {}, label)),
+      el("a", { href, class: href === current ? "active" : "", "aria-current": href === current ? "page" : undefined }, el("span", { class: "ico" }, icon(ico, 24)), el("span", {}, label)),
     ),
   );
 }

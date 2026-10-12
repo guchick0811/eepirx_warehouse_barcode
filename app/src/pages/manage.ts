@@ -13,7 +13,7 @@ export function renderManage(root: HTMLElement): () => void {
   const info = el("div", { class: "card" });
   const checkBtn = el("button", { type: "button", class: "secondary" }, "檢查更新") as HTMLButtonElement;
   const syncBtn = el("button", { type: "button" }, "立即同步") as HTMLButtonElement;
-  const logoutBtn = el("button", { type: "button", class: "danger" }, "登出並清除手機內資料");
+  const logoutBtn = el("button", { type: "button", class: "quiet-danger" }, "登出並清除手機內資料");
 
   const lastVerified = Number(localStorage.getItem("scan.lastVerifiedAt")) || null;
 
@@ -63,8 +63,9 @@ export function renderManage(root: HTMLElement): () => void {
     bannerSlot,
     el("h1", {}, "資料管理"),
     info,
-    el("div", { class: "stack", style: "margin-top:12px" }, el("div", { class: "row" }, checkBtn, syncBtn), logoutBtn),
+    el("div", { class: "stack", style: "margin-top:12px" }, el("div", { class: "row" }, checkBtn, syncBtn)),
     el("p", { class: "muted" }, "商品資料每天凌晨由 ERP 自動同步到雲端；APP 開啟時若偵測到新版本會自動提示。"),
+    el("div", { style: "margin-top:28px" }, logoutBtn),
   );
 
   return () => window.removeEventListener("scan:state", refresh);

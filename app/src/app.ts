@@ -80,7 +80,9 @@ export function handleQuery(input: string): void {
   state.lastQuery = input.trim();
   state.lastResult = result;
   state.selected = result.kind === "exact" && result.items.length === 1 ? result.items[0] : null;
-  navigate("#/result");
+  state.sheetOpen = true;
+  if (location.hash !== "#/scan") navigate("#/scan");
+  else window.dispatchEvent(new Event("scan:result"));
 }
 
 /** 有新資料時顯示的提示條 */

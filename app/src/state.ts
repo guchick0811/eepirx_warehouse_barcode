@@ -12,6 +12,7 @@ export interface AppState {
   lastQuery: string;
   lastResult: FindResult | null;
   selected: Product | null;
+  sheetOpen: boolean;
 }
 
 export const state: AppState = {
@@ -23,6 +24,7 @@ export const state: AppState = {
   lastQuery: "",
   lastResult: null,
   selected: null,
+  sheetOpen: false,
 };
 
 export function setBundle(bundle: ProductBundle | null): void {
@@ -38,4 +40,5 @@ export function resetState(): void {
   state.lastQuery = "";
   state.lastResult = null;
   state.selected = null;
+  state.sheetOpen = false;
 }
