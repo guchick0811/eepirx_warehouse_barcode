@@ -8,6 +8,8 @@ const PATHS: Record<string, string> = {
   help: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M9.5 9.5a2.5 2.5 0 1 1 3.8 2.1c-.8.5-1.3 1-1.3 2.1 M12 17h.01",
   close: "M6 6l12 12 M18 6L6 18",
   back: "M15 5l-7 7 7 7",
+  keyboard: "M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z M7 9h.01 M11 9h.01 M15 9h.01 M7 13h.01 M11 13h.01 M15 13h.01 M8 17h8",
+  search: "M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M21 21l-4.3-4.3",
 };
 
 export function icon(name: keyof typeof PATHS, size = 24): SVGSVGElement {

@@ -3,24 +3,40 @@ import { handleQuery, updateBanner } from "../app";
 import { Scanner, ScannerError, feedback } from "../scanner";
 import { createSheet } from "../sheet";
 import { state } from "../state";
+import { icon } from "../icons";
 import { el } from "../ui";
 import { renderResultContent } from "./result";
 
 const RESUME_DELAY = 700; // 面板滑出後多久恢復辨識
 
 export function renderScan(root: HTMLElement): () => void {
-  // 手動查詢固定在底部導覽列上方（大拇指區），結果面板會停在它上面，隨時按得到
+  // 手動查詢列平常收起；按右下角的鍵盤圓鈕（或面板上的放大鏡）才展開，展開時固定在導覽列上方
   const input = el("input", { id: "scan-query", type: "search", inputmode: "search", autocapitalize: "characters", autocomplete: "off", placeholder: "條碼／商品編號／名稱關鍵字", "aria-label": "手動查詢" }) as HTMLInputElement;
   const searchBtn = el("button", { type: "submit", class: "small" }, "查詢");
-  const form = el("form", { class: "search-bar" }, input, searchBtn);
+  const closeSearch = el("button", { type: "button", class: "search-close", "aria-label": "收起查詢" }, icon("close", 22));
+  const form = el("form", { class: "search-bar", hidden: true }, input, searchBtn, closeSearch);
+  const setSearch = (open: boolean) => {
+    form.hidden = !open;
+    root.classList.toggle("search-open", open);
+    searchFab.classList.toggle("active", open);
+    searchFab.setAttribute("aria-expanded", String(open));
+    if (open) window.setTimeout(() => input.focus(), 50);
+    else input.blur();
+  };
+  closeSearch.addEventListener("click", () => setSearch(false));
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const v = input.value.trim();
     if (v) {
       handleQuery(v);
-      input.blur();
+      setSearch(false);
     }
   });
+  // 拇指區的鍵盤圓鈕（面板打開時改用面板上的放大鏡）
+  const searchFab = el("button", { type: "button", class: "fab", "aria-label": "手動查詢", "aria-expanded": "false" }, icon("keyboard", 30), el("span", { class: "fab-label" }, "輸入"));
+  searchFab.addEventListener("click", () => setSearch(!!form.hidden));
+  const sheetSearch = el("button", { type: "button", class: "sheet-close", "aria-label": "手動查詢" }, icon("search", 22));
+  sheetSearch.addEventListener("click", () => setSearch(!!form.hidden));
 
   const video = el("video", { autoplay: true, muted: true, playsinline: true }) as HTMLVideoElement;
   const status = el("div", { class: "scan-status" }, "正在啟動相機…");
@@ -41,6 +57,7 @@ export function renderScan(root: HTMLElement): () => void {
   // 結果面板
   const sheet = createSheet({
     label: "查詢結果",
+    actions: [sheetSearch],
     onClose: () => {
       state.sheetOpen = false;
       root.classList.remove("sheet-open");
@@ -61,8 +78,7 @@ export function renderScan(root: HTMLElement): () => void {
   };
   window.addEventListener("scan:result", showResult);
 
-  root.classList.add("has-search");
-  root.append(el("h1", { class: "visually-hidden" }, "掃描條碼"), wrap, msg, retryBtn, count, form, sheet.root);
+  root.append(el("h1", { class: "visually-hidden" }, "掃描條碼"), wrap, msg, retryBtn, count, searchFab, form, sheet.root);
 
   const scanner = new Scanner(video);
   let stopped = false;
@@ -90,7 +106,7 @@ export function renderScan(root: HTMLElement): () => void {
       bannerSlot.classList.remove("scan-banner");
       root.insertBefore(bannerSlot, wrap);
       msg.hidden = false;
-      msg.textContent = e instanceof ScannerError ? e.message : "相機無法使用，請改用下方手動查詢";
+      msg.textContent = e instanceof ScannerError ? e.message : "相機無法使用，請按右下角「輸入」手動查詢";
       retryBtn.hidden = false;
     }
   }

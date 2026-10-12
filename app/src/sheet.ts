@@ -14,10 +14,10 @@ export interface Sheet {
 const CLOSE_DISTANCE = 120; // 拖超過這個距離就關閉
 const CLOSE_VELOCITY = 0.6; // px/ms，快速下滑也關閉
 
-export function createSheet(opts: { label: string; onClose: () => void }): Sheet {
+export function createSheet(opts: { label: string; onClose: () => void; actions?: HTMLElement[] }): Sheet {
   const title = el("div", { class: "sheet-title" });
   const closeBtn = el("button", { type: "button", class: "sheet-close", "aria-label": "關閉" }, icon("close", 22));
-  const grip = el("div", { class: "sheet-grip" }, el("span", { class: "sheet-handle", "aria-hidden": "true" }), title, closeBtn);
+  const grip = el("div", { class: "sheet-grip" }, el("span", { class: "sheet-handle", "aria-hidden": "true" }), title, el("div", { class: "sheet-actions" }, ...(opts.actions ?? []), closeBtn));
   const body = el("div", { class: "sheet-body" });
   const root = el("section", { class: "sheet", role: "dialog", "aria-label": opts.label, "aria-hidden": "true" }, grip, body);
 

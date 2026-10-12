@@ -34,7 +34,7 @@ body {
 #app { min-height: 100%; display: flex; flex-direction: column; }
 main.page { flex: 1; padding: calc(16px + var(--safe-t)) 16px calc(var(--nav-h) + 16px + var(--safe-b)); }
 main.page.no-nav { padding-bottom: calc(16px + var(--safe-b)); }
-main.page.has-search { padding-bottom: calc(var(--nav-h) + var(--search-h) + 12px + var(--safe-b)); }
+main.page.search-open { padding-bottom: calc(var(--nav-h) + var(--search-h) + 12px + var(--safe-b)); }
 
 
 h1 { font-size: 22px; margin: 0 0 12px; }
@@ -107,9 +107,25 @@ nav.tabs a .ico { transition: transform 120ms var(--ease-out); }
 }
 .search-bar input { flex: 1; min-height: 48px; padding: 10px 14px; background: var(--bg); }
 .search-bar button { flex: 0 0 auto; }
+.search-bar .search-close { width: 44px; min-height: 48px; padding: 0; background: transparent; color: var(--fg-2); }
+
+/* 右下角拇指區的圓鈕：展開手動查詢。面板打開時隱藏（改用面板上的放大鏡） */
+.fab {
+  position: fixed; right: 14px; bottom: calc(var(--nav-h) + var(--safe-b) + 16px); z-index: 8;
+  width: 68px; height: 68px; min-height: 0; padding: 0; border-radius: 50%;
+  flex-direction: column; gap: 0; line-height: 1.1;
+  background: var(--fab-bg); color: var(--fab-fg);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45), 0 0 0 3px rgba(15, 23, 42, 0.6);
+}
+.fab-label { font-size: 12px; font-weight: 700; }
+.fab.active { background: var(--fg); }
+main.sheet-open .fab, main.search-open .fab { display: none; }
+.sheet-actions { display: flex; gap: 2px; }
 .scan-wrap { position: relative; background: #000; border-radius: var(--radius); overflow: hidden; width: 100%; height: min(58vh, calc((100vw - 32px) * 4 / 3)); }
 /* 面板打開時相機縮成面板上方的剩餘空間，掃描框永遠看得到 */
-main.sheet-open .scan-wrap { height: calc(100vh - var(--nav-h) - var(--search-h) - var(--safe-b) - 46vh - 60px); min-height: 150px; transition: height 280ms cubic-bezier(0.32, 0.72, 0, 1); }
+main.sheet-open .scan-wrap { height: calc(100vh - var(--nav-h) - var(--safe-b) - 46vh - 60px); min-height: 150px;
+}
+main.sheet-open.search-open .scan-wrap { height: calc(100vh - var(--nav-h) - var(--search-h) - var(--safe-b) - 46vh - 60px); min-height: 150px; transition: height 280ms cubic-bezier(0.32, 0.72, 0, 1); }
 main.sheet-open .scan-frame { top: 14%; height: 72%; }
 .scan-banner { position: absolute; left: 8px; right: 8px; top: 8px; }
 .scan-banner .banner { margin: 0; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4); }
@@ -198,7 +214,7 @@ summary { cursor: pointer; font-weight: 600; padding: 6px 0; min-height: 36px; d
 
 /* 底部結果面板：固定在導覽列上方，約半個螢幕高，可下滑關閉 */
 .sheet {
-  position: fixed; left: 0; right: 0; bottom: calc(var(--nav-h) + var(--search-h) + var(--safe-b)); height: 46vh; z-index: 9;
+  position: fixed; left: 0; right: 0; bottom: calc(var(--nav-h) + var(--safe-b)); height: 46vh; z-index: 9;
   background: var(--bg-2); border-radius: 18px 18px 0 0; box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.5);
   display: flex; flex-direction: column;
   transform: translateY(110%);
@@ -206,6 +222,7 @@ summary { cursor: pointer; font-weight: 600; padding: 6px 0; min-height: 36px; d
   will-change: transform;
 }
 .sheet.open { transform: translateY(0); }
+main.search-open .sheet { bottom: calc(var(--nav-h) + var(--search-h) + var(--safe-b)); }
 .sheet-grip {
   display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 6px 8px 6px 16px;
   touch-action: none; cursor: grab; user-select: none; position: relative;
