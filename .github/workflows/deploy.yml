@@ -1,8 +1,10 @@
 name: Deploy PWA to GitHub Pages
 
+# main → 正式版（網站根目錄）；ux-review → 預覽版（/preview/ 子路徑）
+# 分支推送時會連 main 一起重建，正式版內容不變，只是多了 /preview/。
 on:
   push:
-    branches: [main]
+    branches: [main, ux-review]
   workflow_dispatch:
 
 permissions:
@@ -17,25 +19,60 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: app
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout main（正式版）
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: prod
+      - name: Checkout ux-review（預覽版）
+        if: github.ref_name != 'main'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          path: preview
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
-          cache-dependency-path: app/package-lock.json
-      - run: npm ci
-      - run: npm test
-      - run: npm run build
+
+      - name: Build 正式版
+        working-directory: prod/app
+        run: |
+          npm ci
+          npm test
+          npm run build
         env:
           VITE_BASE: /${{ github.event.repository.name }}/
           VITE_SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+
+      - name: Build 預覽版
+        if: github.ref_name != 'main'
+        working-directory: preview/app
+        run: |
+          npm ci
+          npm test
+          npm run build
+          mkdir -p ../../prod/app/dist/preview
+          cp -r dist/. ../../prod/app/dist/preview/
+        env:
+          VITE_BASE: /${{ github.event.repository.name }}/preview/
+          VITE_SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+
+      - name: 重建 ux-review 預覽版（main 推送時）
+        if: github.ref_name == 'main'
+        continue-on-error: true
+        run: |
+          git clone --depth 1 --branch ux-review "https://github.com/${{ github.repository }}.git" preview || exit 0
+          cd preview/app && npm ci && npm run build
+          mkdir -p ../../prod/app/dist/preview
+          cp -r dist/. ../../prod/app/dist/preview/
+        env:
+          VITE_BASE: /${{ github.event.repository.name }}/preview/
+          VITE_SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: app/dist
+          path: prod/app/dist
 
   deploy:
     needs: build
