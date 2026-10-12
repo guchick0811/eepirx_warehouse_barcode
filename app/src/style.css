@@ -21,6 +21,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; } /* 元素自己的 display 規則不可蓋過 hidden */
 html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); }
 body {
   font-family: -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
@@ -100,9 +101,9 @@ nav.tabs a .ico { transition: transform 120ms var(--ease-out); }
 .search-top { margin-bottom: 10px; }
 .search-top input { min-height: 48px; padding: 10px 14px; }
 .search-top button { flex: 0 0 auto; }
-.scan-wrap { position: relative; background: #000; border-radius: var(--radius); overflow: hidden; aspect-ratio: 3 / 4; max-height: 58vh; }
+.scan-wrap { position: relative; background: #000; border-radius: var(--radius); overflow: hidden; width: 100%; height: min(58vh, calc((100vw - 32px) * 4 / 3)); }
 /* 面板打開時相機縮成面板上方的剩餘空間，掃描框永遠看得到 */
-main.sheet-open .scan-wrap { aspect-ratio: auto; height: calc(100vh - var(--nav-h) - var(--safe-b) - 52vh - 150px); min-height: 150px; transition: height 280ms cubic-bezier(0.32, 0.72, 0, 1); }
+main.sheet-open .scan-wrap { height: calc(100vh - var(--nav-h) - var(--safe-b) - 52vh - 150px); min-height: 150px; transition: height 280ms cubic-bezier(0.32, 0.72, 0, 1); }
 main.sheet-open .scan-frame { top: 14%; height: 72%; }
 .scan-banner { position: absolute; left: 8px; right: 8px; top: 8px; }
 .scan-banner .banner { margin: 0; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4); }
