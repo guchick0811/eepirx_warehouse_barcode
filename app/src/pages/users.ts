@@ -16,7 +16,7 @@ const ACTION_LABEL: Record<string, string> = {
 };
 
 export function renderUsers(root: HTMLElement): void {
-  const tableBody = el("div", { class: "user-list" });
+  const tableBody = el("div", { class: "user-list" }, el("p", { class: "muted center" }, "載入中…"));
   const auditBody = el("tbody");
 
   async function load(): Promise<void> {
@@ -52,11 +52,26 @@ export function renderUsers(root: HTMLElement): void {
       if (!confirmDialog(`${next ? "啟用" : "停用"}帳號 ${u.username}？${next ? "" : "停用後此人將無法登入與同步資料。"}`)) return;
       await run(() => callAdmin("set_active", { id: u.id, is_active: next }), `${u.username} 已${next ? "啟用" : "停用"}`);
     });
-    reset.addEventListener("click", async () => {
-      const pw = window.prompt(`輸入 ${u.username} 的新密碼（至少 8 碼）`);
-      if (pw === null) return;
+    // 重設密碼：在卡片內展開小表單（不用系統 prompt）
+    const pwInput = el("input", { type: "text", autocomplete: "off", autocapitalize: "none", placeholder: "新密碼（至少 8 碼）", "aria-label": `${u.username} 的新密碼` }) as HTMLInputElement;
+    const pwOk = el("button", { type: "submit", class: "small" }, "確認") as HTMLButtonElement;
+    const pwCancel = el("button", { type: "button", class: "small secondary" }, "取消");
+    const pwForm = el("form", { class: "reset-form", hidden: true }, pwInput, pwOk, pwCancel);
+    reset.addEventListener("click", () => {
+      pwForm.hidden = !pwForm.hidden;
+      if (!pwForm.hidden) pwInput.focus();
+    });
+    pwCancel.addEventListener("click", () => {
+      pwForm.hidden = true;
+      pwInput.value = "";
+    });
+    pwForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const pw = pwInput.value;
       if (pw.length < 8) return toast("密碼至少 8 碼", "error");
-      await run(() => callAdmin("reset_password", { id: u.id, password: pw }), `${u.username} 的密碼已重設`);
+      pwOk.disabled = true;
+      await run(() => callAdmin("reset_password", { id: u.id, password: pw }), `${u.username} 的密碼已重設，請告知本人`);
+      pwOk.disabled = false;
     });
     remove.addEventListener("click", async () => {
       if (!confirmDialog(`確定刪除帳號 ${u.username}？此操作無法復原。`)) return;
@@ -78,6 +93,7 @@ export function renderUsers(root: HTMLElement): void {
         ),
       ),
       el("div", { class: "user-actions" }, toggle, reset, remove),
+      pwForm,
     );
   }
 
@@ -92,12 +108,12 @@ export function renderUsers(root: HTMLElement): void {
   }
 
   // 新增帳號表單
-  const username = el("input", { type: "text", autocapitalize: "none", autocomplete: "off", placeholder: "3～20 碼英數字或底線，例如 wang01" }) as HTMLInputElement;
-  const display = el("input", { type: "text", autocomplete: "off", placeholder: "顯示姓名" }) as HTMLInputElement;
-  const password = el("input", { type: "text", autocomplete: "new-password", placeholder: "至少 8 碼" }) as HTMLInputElement;
-  const role = el("select", {}, el("option", { value: "staff" }, "一般人員"), el("option", { value: "admin" }, "管理者")) as HTMLSelectElement;
+  const username = el("input", { id: "new-username", type: "text", autocapitalize: "none", autocomplete: "off", placeholder: "3～20 碼英數字或底線，例如 wang01" }) as HTMLInputElement;
+  const display = el("input", { id: "new-display", type: "text", autocomplete: "off", placeholder: "顯示姓名" }) as HTMLInputElement;
+  const password = el("input", { id: "new-password", type: "text", autocomplete: "new-password", placeholder: "至少 8 碼" }) as HTMLInputElement;
+  const role = el("select", { id: "new-role" }, el("option", { value: "staff" }, "一般人員"), el("option", { value: "admin" }, "管理者")) as HTMLSelectElement;
   const submit = el("button", { type: "submit" }, "新增帳號") as HTMLButtonElement;
-  const form = el("form", { class: "card stack" }, el("h2", { style: "margin-top:0" }, "新增帳號"), el("label", {}, "帳號"), username, el("label", {}, "姓名"), display, el("label", {}, "密碼"), password, el("label", {}, "角色"), role, submit);
+  const form = el("form", { class: "card stack" }, el("h2", { style: "margin-top:0" }, "新增帳號"), el("label", { for: "new-username" }, "帳號"), username, el("label", { for: "new-display" }, "姓名"), display, el("label", { for: "new-password" }, "密碼"), password, el("label", { for: "new-role" }, "角色"), role, submit);
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const u = username.value.trim().toLowerCase();

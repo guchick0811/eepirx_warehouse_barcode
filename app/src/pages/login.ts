@@ -4,17 +4,17 @@ import { LoginError, login } from "../supabase";
 import { el, navigate } from "../ui";
 
 export function renderLogin(root: HTMLElement): void {
-  const user = el("input", { type: "text", name: "username", autocomplete: "username", autocapitalize: "none", spellcheck: "false", placeholder: "例如 wang01", required: true }) as HTMLInputElement;
-  const pass = el("input", { type: "password", name: "password", autocomplete: "current-password", placeholder: "密碼", required: true }) as HTMLInputElement;
-  const err = el("div", { class: "error" });
+  const user = el("input", { id: "login-username", type: "text", name: "username", autocomplete: "username", autocapitalize: "none", spellcheck: "false", placeholder: "例如 wang01", required: true }) as HTMLInputElement;
+  const pass = el("input", { id: "login-password", type: "password", name: "password", autocomplete: "current-password", placeholder: "密碼", required: true }) as HTMLInputElement;
+  const err = el("div", { class: "error", role: "alert" });
   const btn = el("button", { type: "submit" }, "登入") as HTMLButtonElement;
 
   const form = el(
     "form",
     { class: "stack", autocomplete: "on" },
-    el("label", {}, "帳號"),
+    el("label", { for: "login-username" }, "帳號"),
     user,
-    el("label", {}, "密碼"),
+    el("label", { for: "login-password" }, "密碼"),
     pass,
     err,
     btn,
